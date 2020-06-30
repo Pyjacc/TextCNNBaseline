@@ -1,25 +1,28 @@
-import re
+
 import pandas as pd
-import csv
 from tensorflow.keras import preprocessing
 import numpy as np
-import json
 import jieba
 from sklearn.preprocessing import MultiLabelBinarizer
 import os
 from pathlib import Path
+import json
+import csv
+import re
+from textCNN.config import *
 
 
-def get_data(file_x, file_y, origin_data='./data/baidu_95.csv'):
-    if not os.path.exists(file_x):
+def get_data(file_x_path, file_y_path, origin_data=origin_data_patch):
+    if not os.path.exists(file_x_path):
         preprocess(origin_data)
 
-    x = np.load(file_x)
-    y = np.load(file_y)
+    x_train = np.load(file_x_path)
+    y_train = np.load(file_y_path)
 
-    return x, y
+    return x_train, y_train
 
-def preprocess(data_file, save_dir='../datasets/', vocab_size=200, padding_size=128):
+
+def preprocess(data_file, save_dir='../datasets/', vocab_size=VOCABSIZE, padding_size=PADDINGSIZE):
 
     data_file = Path(data_file)
     # header：要不要索引，label：标签列，item：表示文本列
@@ -46,6 +49,7 @@ def preprocess(data_file, save_dir='../datasets/', vocab_size=200, padding_size=
     mlb = MultiLabelBinarizer() #创建对象
     y = mlb.fit_transform(y)    #将y转为多标签方式
 
+    # 保存所有的标签
     with open(f'{save_dir} labels_{data_file.stem}.txt','w',encoding='utf-8') as f:
         for label in mlb.classes_:
             f.write(f'{label}\n')
@@ -58,12 +62,15 @@ def preprocess(data_file, save_dir='../datasets/', vocab_size=200, padding_size=
     y = y[index]
 
     split = int(len(x) * 0.9)       #90%作为训练集
-    np.save(f'{save_dir}{data_file.stem}_train_x.npy',x[:split])
+    # 保存为.npy格式，提高读取效率。
+    # 注：从txt或其他文件读取1000 * 1000的数据，直接读取大约需要1s，而转成.npy后，读取只需要约0.01s，
+    # 速度提升100倍。如果需要多次读取相同的数据文件，这是一个有用的技巧，数据量越大，速度提升越明显！
+    # 采用np.load()的形势加载.npy文件
+    np.save(f'{save_dir}{data_file.stem}_train_x.npy',x[:split])    #标签对应的文本
     np.save(f'{save_dir}{data_file.stem}_test_x.npy', x[split:])
-    np.save(f'{save_dir}{data_file.stem}_train_y.npy', y[:split])
+    np.save(f'{save_dir}{data_file.stem}_train_y.npy', y[:split])   #真实标签
     np.save(f'{save_dir}{data_file.stem}_test_y.npy', y[split:])
 
 
-
 if __name__ == '__main__':
-     preprocess('../datasets/baidu_95.csv')
+    preprocess(origin_data_patch)

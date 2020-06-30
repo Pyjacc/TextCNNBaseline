@@ -1,15 +1,16 @@
-import argparse
-from textCNN.data_loader import preprocess,get_data
+
 from tensorflow.keras.models import load_model
-import tensorflow as tf
 import numpy as np
+import os
+from pprint import pprint
+import tensorflow.keras.backend as K
+import argparse
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 from sklearn.utils.multiclass import unique_labels
 import matplotlib.pyplot as plt
-import os
+import tensorflow as tf
 from keras.metrics import categorical_accuracy
-from pprint import pprint
-import tensorflow.keras.backend as K
+from textCNN.data_loader import preprocess,get_data
 
 def micro_f1(y_true, y_pred):
     """F1 metric.

@@ -2,5 +2,5 @@
 *.iml
 .venv/*
 __pycache__/*
-
+textCNN/__pycache__/*
 
