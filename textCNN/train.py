@@ -9,7 +9,7 @@ from textCNN import data_loader
 from textCNN.textcnn_model import TextCNN
 from textCNN.config import *
 
-
+# https://zhuanlan.zhihu.com/p/64315175
 # 评价函数（代码可能有问题）
 def micro_f1(y_true, y_pred):
     """F1 metric.

@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from keras.metrics import categorical_accuracy
 from textCNN.data_loader import preprocess,get_data
+from textCNN.config import *
 
 def micro_f1(y_true, y_pred):
     """F1 metric.
@@ -80,26 +81,28 @@ def f1_np(y_true, y_pred):
     return micro_f1, macro_f1       # 建议使用macro_f1
 
 
-
-
 def test(model, x_test, y_test):
-    y_pred = model.predict(x=x_test, batch_size=1, verbose=1)   #batch_size=1：一个一个进行预测
+    # batch_size=1：一个一个进行预测，verbose：verbosity mode日志显示，0 or 1
+    # https://blog.csdn.net/C_chuxin/article/details/84573398
+    y_pred = model.predict(x=x_test, batch_size=1, verbose=1)
     # print(y_pred)
-    metrics = [f1_np]
+    metrics = [f1_np]   #将函数f1_np的地址放入list中，后面的使用中类似回调
     result = {}
     for func in metrics:
-        result[func.__name__] = func(y_test, y_pred)
-    pprint(result)
+        # print(func.__name__)  # f1_np
+        result[func.__name__] = func(y_test, y_pred)    #调用f1_np函数
+    pprint(result)      #打印结果中'f1_np': (nan, 0.0)维度值为（micro_f1, macro_f1）
 
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='This is the TextCNN test project.')
-    parser.add_argument('--results_dir', default='./results/',type=str, help='The results dir including log, model, vocabulary and some images.')
+    parser.add_argument('--results_dir', default=results_dir,type=str, help='The results dir including log, model, vocabulary and some images.')
     args = parser.parse_args()
     print('Parameters:', args)
-    x_test, y_test = get_data('../datasets/baidu_95_test_x.npy', '../datasets/baidu_95_test_y.npy')
+    x_test, y_test = get_data(test_x_path, test_y_path)
     print("Loading model...")
-    # custom_objects要与train中metrics=[micro_f1,macro_f1]对应
-    model = load_model(os.path.join(args.results_dir, 'TextCNN.h5'),custom_objects={"micro_f1":micro_f1,"macro_f1":macro_f1})
+
+    # custom_objects（字定义的评价指标）要与train中metrics=[micro_f1,macro_f1]对应
+    model = load_model(os.path.join(args.results_dir, 'TextCNN.h5'), custom_objects={"micro_f1":micro_f1,"macro_f1":macro_f1})
     test(model, x_test, y_test)
